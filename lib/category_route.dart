@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:unitconverter/category.dart';
-import 'package:unitconverter/category_tile.dart';
 import 'package:unitconverter/unit.dart';
+import 'package:unitconverter/api.dart';
 
 class CategoryRoute extends StatefulWidget {
   const CategoryRoute();
@@ -13,9 +13,8 @@ class CategoryRoute extends StatefulWidget {
 }
 
 class _CategoryRouteState extends State<CategoryRoute> {
-  static const String _url = 'flutter/udacity.com';
   Category _defaultCategory, _currentCategory;
-  List<CategoryTile> _categories;
+  List<Category> _categories;
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
       'highlight': Color(0xFF6AB7A8),
@@ -80,23 +79,50 @@ class _CategoryRouteState extends State<CategoryRoute> {
     data.keys().forEach((key) {
       List<Unit> units =
           data[key].map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
-      final category = Category(
+      final _category = Category(
         name: key,
         units: units,
         color: _baseColors[index],
         icon: _icons[index],
       );
-      final categoryTile = CategoryTile(
-        category: category,
-        onTap: _onCategoryTap,
-      );
-      _categories.add(categoryTile);
 
-      if (index == 0) _defaultCategory = category;
+      setState(() {
+        if (index == 0) _defaultCategory = _category;
+        _categories.add(_category);
+      });
     });
   }
 
-  Future<void> _retrieveApiCategories() {}
+  Future<void> _retrieveApiCategories() async {
+    final _category = Category(
+      name: apiCategory['name'],
+      units: [],
+      color: _baseColors.last,
+      icon: _icons.last,
+    );
+    setState(() {
+      _categories.add(_category);
+    });
+
+    final api = Api();
+    String category = apiCategory['route'];
+    final jsonUnits = await api.getUnits(category);
+
+    if (jsonUnits != null) {
+      List<Unit> units =
+          jsonUnits.map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
+      setState(() {
+        final _category = Category(
+          name: apiCategory['name'],
+          units: units,
+          color: _baseColors.last,
+          icon: _icons.last,
+        );
+        _categories.removeLast();
+        _categories.add(_category);
+      });
+    }
+  }
 
   void _onCategoryTap(Category category) {
     setState(() {
