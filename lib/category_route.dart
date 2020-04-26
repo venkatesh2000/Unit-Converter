@@ -1,7 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:unitconverter/backdrop.dart';
 import 'package:unitconverter/category.dart';
+import 'package:unitconverter/category_tile.dart';
+import 'package:unitconverter/convert_unit.dart';
 import 'package:unitconverter/unit.dart';
 import 'package:unitconverter/api.dart';
 
@@ -130,6 +134,68 @@ class _CategoryRouteState extends State<CategoryRoute> {
     });
   }
 
+  Widget _buildCategoryList(Orientation orientation) {
+    if (orientation == Orientation.portrait) {
+      return ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            var category = _categories[index];
+            return CategoryTile(
+              onTap: (category.name == apiCategory['name'] &&
+                      category.units.isEmpty)
+                  ? null
+                  : _onCategoryTap,
+              category: category,
+            );
+          },
+          itemCount: _categories.length);
+    } else {
+      return GridView.count(
+        crossAxisCount: 2,
+        childAspectRatio: 3.0,
+        children: _categories.map((Category category) {
+          return CategoryTile(
+            onTap:
+                (category.name == apiCategory['name'] && category.units.isEmpty)
+                    ? null
+                    : _onCategoryTap,
+            category: category,
+          );
+        }).toList(),
+      );
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {}
+  Widget build(BuildContext context) {
+    if (_categories.isEmpty) {
+      return Center(
+        child: Container(
+          height: 180.0,
+          width: 180.0,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    assert(debugCheckHasMediaQuery(context));
+    final listView = Padding(
+      padding: EdgeInsets.only(
+        left: 8.0,
+        right: 8.0,
+        bottom: 48.0,
+      ),
+      child: _buildCategoryList(MediaQuery.of(context).orientation),
+    );
+
+    return Backdrop(
+      currentCategory:
+          _currentCategory == null ? _defaultCategory : _currentCategory,
+      backPanel: listView,
+      frontPanel: _currentCategory == null
+          ? ConvertUnit(_defaultCategory)
+          : ConvertUnit(_currentCategory),
+      backTitle: Text('Select a Category'),
+      frontTitle: Text('Unit Converter'),
+    );
+  }
 }
