@@ -13,6 +13,7 @@ class UnitConverter extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Unit Converter',
+      color: Colors.black,
       theme: ThemeData(
         fontFamily: 'Raleway',
         textTheme: Theme.of(context).textTheme.apply(
@@ -20,7 +21,7 @@ class UnitConverter extends StatelessWidget {
               displayColor: Colors.grey[600],
             ),
         primaryColor: Colors.grey[500],
-        primaryColorDark: Colors.green[500],
+        textSelectionHandleColor: Colors.green[500],
       ),
       home: CategoryRoute(),
     );

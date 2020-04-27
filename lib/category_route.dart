@@ -158,10 +158,10 @@ class _CategoryRouteState extends State<CategoryRoute> {
         childAspectRatio: 3.0,
         children: _categories.map((Category _category) {
           return CategoryTile(
-            onTap:
-                (_category.name == apiCategory['name'] && _category.units.isEmpty)
-                    ? null
-                    : _onCategoryTap,
+            onTap: (_category.name == apiCategory['name'] &&
+                    _category.units.isEmpty)
+                ? null
+                : _onCategoryTap,
             category: _category,
           );
         }).toList(),
@@ -198,8 +198,14 @@ class _CategoryRouteState extends State<CategoryRoute> {
       frontPanel: _currentCategory == null
           ? ConvertUnit(category: _defaultCategory)
           : ConvertUnit(category: _currentCategory),
-      backTitle: Text('Select a Category'),
-      frontTitle: Text('Unit Converter'),
+      backTitle: Text(
+        'Select a Category',
+        style: Theme.of(context).textTheme.headline6,
+      ),
+      frontTitle: Text(
+        'Unit Converter',
+        style: Theme.of(context).textTheme.headline6,
+      ),
     );
   }
 }

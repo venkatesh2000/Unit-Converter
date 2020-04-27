@@ -131,7 +131,7 @@ class _ConvertUnitState extends State<ConvertUnit> {
     } else {
       setState(() {
         _output =
-            _formatOutput((_input * _toUnit.conversion) / _fromUnit.conversion);
+            _formatOutput(_input * (_toUnit.conversion / _fromUnit.conversion));
       });
     }
   }
@@ -168,15 +168,24 @@ class _ConvertUnitState extends State<ConvertUnit> {
           child: ButtonTheme(
             alignedDropdown: true,
             child: DropdownButton(
-              value: _currentUnit,
-              items: _units,
-              onChanged: _onChanged,
-              style: Theme.of(context).textTheme.headline6,
-            ),
+                value: _currentUnit,
+                items: _units,
+                onChanged: _onChanged,
+                style: Theme.of(context).textTheme.headline6),
           ),
         ),
       ),
     );
+  }
+
+  void swapUnits() {
+    var temp = _fromUnit;
+    setState(() {
+      _fromUnit = _toUnit;
+      _toUnit = temp;
+    });
+
+    _computeOutput();
   }
 
   @override
@@ -201,7 +210,7 @@ class _ConvertUnitState extends State<ConvertUnit> {
                 color: Colors.white,
               ),
               Text(
-                "Oh no! We can't seem to connect right now!",
+                "Oh no! We are unable to connect right now!",
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headline5.copyWith(
                       color: Colors.white,
@@ -220,7 +229,10 @@ class _ConvertUnitState extends State<ConvertUnit> {
         children: [
           TextField(
             key: _inputKey,
-            style: Theme.of(context).textTheme.headline4,
+            style: Theme.of(context)
+                .textTheme
+                .headline4
+                .copyWith(color: Colors.black),
             decoration: InputDecoration(
               labelStyle: Theme.of(context).textTheme.headline4,
               labelText: 'Input',
@@ -238,12 +250,18 @@ class _ConvertUnitState extends State<ConvertUnit> {
     );
 
     final arrows = RotatedBox(
-      quarterTurns: 1,
-      child: Icon(
-        Icons.compare_arrows,
-        size: 40.0,
-      ),
-    );
+        quarterTurns: 1,
+        child: RawMaterialButton(
+          onPressed: swapUnits,
+          elevation: 5.0,
+          fillColor: Colors.grey[50],
+          child: Icon(
+            Icons.compare_arrows,
+            size: 35.0,
+          ),
+          padding: EdgeInsets.all(15.0),
+          shape: CircleBorder(),
+        ));
 
     final output = Padding(
       padding: _padding,
@@ -260,7 +278,10 @@ class _ConvertUnitState extends State<ConvertUnit> {
             ),
             child: Text(
               _output,
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context)
+                  .textTheme
+                  .headline4
+                  .copyWith(color: Colors.black),
             ),
           ),
           _buildDropDown(_toUnit.name, _updateToUnit),
