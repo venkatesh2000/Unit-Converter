@@ -18,7 +18,7 @@ class CategoryRoute extends StatefulWidget {
 
 class _CategoryRouteState extends State<CategoryRoute> {
   Category _defaultCategory, _currentCategory;
-  List<Category> _categories;
+  final _categories = <Category>[];
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
       'highlight': Color(0xFF6AB7A8),
@@ -68,8 +68,10 @@ class _CategoryRouteState extends State<CategoryRoute> {
   @override
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
-    await _retrieveLocalCategories();
-    await _retrieveApiCategories();
+    if (_categories.isEmpty) {
+      await _retrieveLocalCategories();
+      await _retrieveApiCategories();
+    }
   }
 
   Future<void> _retrieveLocalCategories() async {
@@ -78,10 +80,10 @@ class _CategoryRouteState extends State<CategoryRoute> {
     final data = JsonDecoder().convert(await json);
     var index = 0;
 
-    if (data is! Map) return null;
+    if (data is! Map) throw ('Data retrieved from API is not a Map');
 
-    data.keys().forEach((key) {
-      List<Unit> units =
+    data.keys.forEach((key) {
+      final List<Unit> units =
           data[key].map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
       final _category = Category(
         name: key,
@@ -94,6 +96,8 @@ class _CategoryRouteState extends State<CategoryRoute> {
         if (index == 0) _defaultCategory = _category;
         _categories.add(_category);
       });
+
+      ++index;
     });
   }
 
@@ -115,13 +119,13 @@ class _CategoryRouteState extends State<CategoryRoute> {
     if (jsonUnits != null) {
       List<Unit> units =
           jsonUnits.map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
+      final _category = Category(
+        name: apiCategory['name'],
+        units: units,
+        color: _baseColors.last,
+        icon: _icons.last,
+      );
       setState(() {
-        final _category = Category(
-          name: apiCategory['name'],
-          units: units,
-          color: _baseColors.last,
-          icon: _icons.last,
-        );
         _categories.removeLast();
         _categories.add(_category);
       });
@@ -138,13 +142,13 @@ class _CategoryRouteState extends State<CategoryRoute> {
     if (orientation == Orientation.portrait) {
       return ListView.builder(
           itemBuilder: (BuildContext context, int index) {
-            var category = _categories[index];
+            var _category = _categories[index];
             return CategoryTile(
-              onTap: (category.name == apiCategory['name'] &&
-                      category.units.isEmpty)
+              onTap: (_category.name == apiCategory['name'] &&
+                      _category.units.isEmpty)
                   ? null
                   : _onCategoryTap,
-              category: category,
+              category: _category,
             );
           },
           itemCount: _categories.length);
@@ -152,13 +156,13 @@ class _CategoryRouteState extends State<CategoryRoute> {
       return GridView.count(
         crossAxisCount: 2,
         childAspectRatio: 3.0,
-        children: _categories.map((Category category) {
+        children: _categories.map((Category _category) {
           return CategoryTile(
             onTap:
-                (category.name == apiCategory['name'] && category.units.isEmpty)
+                (_category.name == apiCategory['name'] && _category.units.isEmpty)
                     ? null
                     : _onCategoryTap,
-            category: category,
+            category: _category,
           );
         }).toList(),
       );
@@ -192,12 +196,8 @@ class _CategoryRouteState extends State<CategoryRoute> {
           _currentCategory == null ? _defaultCategory : _currentCategory,
       backPanel: listView,
       frontPanel: _currentCategory == null
-          ? ConvertUnit(
-              category: _defaultCategory,
-            )
-          : ConvertUnit(
-              category: _currentCategory,
-            ),
+          ? ConvertUnit(category: _defaultCategory)
+          : ConvertUnit(category: _currentCategory),
       backTitle: Text('Select a Category'),
       frontTitle: Text('Unit Converter'),
     );

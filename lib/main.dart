@@ -12,14 +12,15 @@ class UnitConverter extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'Unit Converter',
       theme: ThemeData(
         fontFamily: 'Raleway',
         textTheme: Theme.of(context).textTheme.apply(
-              bodyColor: Colors.green[500],
-              displayColor: Colors.green[600],
+              bodyColor: Colors.black,
+              displayColor: Colors.grey[600],
             ),
-        primaryColor: Colors.green[100],
-        primaryColorDark: Colors.green[50],
+        primaryColor: Colors.grey[500],
+        primaryColorDark: Colors.green[500],
       ),
       home: CategoryRoute(),
     );

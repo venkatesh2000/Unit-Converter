@@ -12,37 +12,41 @@ class CategoryTile extends StatelessWidget {
 
   const CategoryTile({
     @required this.category,
-    @required this.onTap,
-  })  : assert(category != null),
-        assert(onTap != null);
+    this.onTap,
+  }) : assert(category != null);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: _rowHeight,
-      padding: _padding,
-      child: InkWell(
-          highlightColor: category.color['highlight'],
-          splashColor: category.color['splash'],
-          borderRadius: _borderRadius,
-          onTap: () => onTap(category),
-          child: Padding(
-            padding: _padding,
-            child: Row(
-              children: <Widget>[
-                Padding(
-                  padding: _padding,
-                  child: Image.asset(category.icon),
-                ),
-                Center(
-                  child: Text(
-                    category.name,
-                    style: Theme.of(context).textTheme.subtitle1,
+    return Material(
+      color:
+          onTap == null ? Color.fromRGBO(50, 50, 50, 0.2) : Colors.transparent,
+      child: Container(
+        height: _rowHeight,
+        child: InkWell(
+            highlightColor: category.color['highlight'],
+            splashColor: category.color['splash'],
+            borderRadius: _borderRadius,
+            onTap: onTap == null ? null : () => onTap(category),
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Padding(
+                    padding: _padding,
+                    child: Image.asset(category.icon),
                   ),
-                ),
-              ],
-            ),
-          )),
+                  Center(
+                    child: Text(
+                      category.name,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
+                  ),
+                ],
+              ),
+            )),
+      ),
     );
   }
 }

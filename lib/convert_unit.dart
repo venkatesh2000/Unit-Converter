@@ -20,9 +20,9 @@ class ConvertUnit extends StatefulWidget {
 class _ConvertUnitState extends State<ConvertUnit> {
   List<DropdownMenuItem> _units;
   double _input;
-  String _output;
+  String _output = '';
   Unit _fromUnit, _toUnit;
-  bool _inputError, _conversionError;
+  bool _inputError = false, _conversionError = false;
   final _inputKey = GlobalKey(debugLabel: 'inputText');
 
   @override
@@ -30,6 +30,15 @@ class _ConvertUnitState extends State<ConvertUnit> {
     super.initState();
     _buildDropDownMenuItems();
     _defaultValues();
+  }
+
+  @override
+  void didUpdateWidget(ConvertUnit old) {
+    super.didUpdateWidget(old);
+    if (old.category != widget.category) {
+      _buildDropDownMenuItems();
+      _defaultValues();
+    }
   }
 
   void _buildDropDownMenuItems() {
@@ -61,8 +70,12 @@ class _ConvertUnitState extends State<ConvertUnit> {
   }
 
   Unit _getUnit(String unitName) {
-    return widget.category.units
-        .firstWhere((Unit unit) => unit.name == unitName);
+    return widget.category.units.firstWhere(
+      (Unit unit) {
+        return unit.name == unitName;
+      },
+      orElse: null,
+    );
   }
 
   void _updateFromUnit(dynamic unitName) {
@@ -89,16 +102,12 @@ class _ConvertUnitState extends State<ConvertUnit> {
     } else {
       try {
         double temp = double.parse(newInput);
-        setState(() {
-          _inputError = false;
-        });
+        _inputError = false;
         _input = temp;
         _computeOutput();
       } on Exception catch (e) {
-        setState(() {
-          _inputError = true;
-        });
         print('$e');
+        _inputError = true;
       }
     }
   }
@@ -106,7 +115,7 @@ class _ConvertUnitState extends State<ConvertUnit> {
   Future<void> _computeOutput() async {
     if (widget.category.name == apiCategory['name']) {
       final api = Api();
-      final conversion = await api.getConversion(widget.category.name,
+      final conversion = await api.getConversion(apiCategory['route'],
           _input.toString(), _fromUnit.name, _toUnit.name);
 
       if (conversion == null) {
@@ -115,7 +124,7 @@ class _ConvertUnitState extends State<ConvertUnit> {
         });
       } else {
         setState(() {
-          _conversionError = true;
+          _conversionError = false;
           _output = _formatOutput(conversion);
         });
       }
@@ -145,9 +154,9 @@ class _ConvertUnitState extends State<ConvertUnit> {
       padding: EdgeInsets.symmetric(vertical: 8.0),
       margin: EdgeInsets.only(top: 16.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(0.0),
+        color: Colors.grey[50],
         border: Border.all(
-          color: Colors.grey[50],
+          color: Colors.grey[400],
           width: 1.0,
         ),
       ),
@@ -162,7 +171,7 @@ class _ConvertUnitState extends State<ConvertUnit> {
               value: _currentUnit,
               items: _units,
               onChanged: _onChanged,
-              style: Theme.of(context).textTheme.headline5,
+              style: Theme.of(context).textTheme.headline6,
             ),
           ),
         ),
@@ -172,13 +181,14 @@ class _ConvertUnitState extends State<ConvertUnit> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.category.name == apiCategory['name'] && _conversionError) {
+    if (widget.category.units == null ||
+        (widget.category.name == apiCategory['name'] && _conversionError)) {
       return SingleChildScrollView(
         child: Container(
           padding: _padding,
           margin: _padding,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(16.0),
             color: widget.category.color['error'],
           ),
           child: Column(
@@ -207,12 +217,13 @@ class _ConvertUnitState extends State<ConvertUnit> {
       padding: _padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
+        children: [
           TextField(
             key: _inputKey,
+            style: Theme.of(context).textTheme.headline4,
             decoration: InputDecoration(
+              labelStyle: Theme.of(context).textTheme.headline4,
               labelText: 'Input',
-              labelStyle: Theme.of(context).textTheme.headline1,
               errorText: _inputError ? 'Invalid number entered!!' : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0.0),
@@ -257,8 +268,8 @@ class _ConvertUnitState extends State<ConvertUnit> {
       ),
     );
 
-    final converter = ListView(
-      children: <Widget>[
+    final converter = Column(
+      children: [
         input,
         arrows,
         output,
@@ -270,12 +281,16 @@ class _ConvertUnitState extends State<ConvertUnit> {
       child: OrientationBuilder(
         builder: (BuildContext context, Orientation orientation) {
           if (orientation == Orientation.portrait) {
-            return converter;
+            return SingleChildScrollView(
+              child: converter,
+            );
           } else {
-            return Center(
-              child: Container(
-                child: converter,
-                width: 450.0,
+            return SingleChildScrollView(
+              child: Center(
+                child: Container(
+                  child: converter,
+                  width: 450.0,
+                ),
               ),
             );
           }
